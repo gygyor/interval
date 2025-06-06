@@ -16,7 +16,9 @@ program interval_test;
 
 uses
   DUnitTestRunner,
-  TestUAvlTree in 'TestUAvlTree.pas';
+  TestUAvlTree in 'TestUAvlTree.pas',
+  TestUDisjointInterval in 'TestUDisjointInterval.pas',
+  UDisjointInterval in '..\src\UDisjointInterval.pas';
 
 {$R *.RES}
 

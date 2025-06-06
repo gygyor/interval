@@ -89,6 +89,8 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="TestUAvlTree.pas"/>
+        <DCCReference Include="TestUDisjointInterval.pas"/>
+        <DCCReference Include="..\src\UDisjointInterval.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

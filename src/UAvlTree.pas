@@ -72,6 +72,7 @@ type
     procedure Clear;
     function IsIn(Key: TKey): boolean;
     function SearchItem(Key: TKey): TAvlTreeItem<TKey, TItemData>;
+    function SearchItemOrPrev(Key: TKey): TAvlTreeItem<TKey, TItemData>;
     procedure DeleteItem(Item: TAvlTreeItem<TKey, TItemData>);
     function EnsureItem(Key: TKey): TAvlTreeItem<TKey, TItemData>;
     function AddItem(Key: TKey): TAvlTreeItem<TKey, TItemData>; overload;
@@ -109,7 +110,7 @@ begin
 
     Item.FTree:=Self;
 
-    if Assigned(InternalSearchItem(Item.Key,parent)) then
+    if Assigned(InternalSearchItem(Item.Key, parent)) then
       raise EKeyConflict.Create('Key conflict.');
 
     LinkIn(Item, parent);
@@ -457,6 +458,25 @@ var
   parent: TAvlTreeItem<TKey, TItemData>;
 begin
   Result:=InternalSearchItem(Key, Parent);
+end;
+
+function TAvlTree<TKey, TItemData>.SearchItemOrPrev(
+  Key: TKey): TAvlTreeItem<TKey, TItemData>;
+var
+  parent: TAvlTreeItem<TKey, TItemData>;
+begin
+  Result:=InternalSearchItem(Key, Parent);
+
+  if Assigned(Result) then
+    Exit;
+
+  if not Assigned(Parent) then
+    Exit;
+
+  if FComparer.Compare(Key, parent.Key) > 0 then
+    Exit(parent);
+
+  Result := parent.Prev;
 end;
 
 procedure TAvlTree<TKey, TItemData>.SetHeightUpper(
