@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{F699EDF6-9C2E-481D-AC58-3A030055EB7C}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="test\interval_test.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="src\Interval.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="interval_test">
+        <MSBuild Projects="test\interval_test.dproj"/>
+    </Target>
+    <Target Name="interval_test:Clean">
+        <MSBuild Projects="test\interval_test.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="interval_test:Make">
+        <MSBuild Projects="test\interval_test.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Interval">
+        <MSBuild Projects="src\Interval.dproj"/>
+    </Target>
+    <Target Name="Interval:Clean">
+        <MSBuild Projects="src\Interval.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Interval:Make">
+        <MSBuild Projects="src\Interval.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="interval_test;Interval"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="interval_test:Clean;Interval:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="interval_test:Make;Interval:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
