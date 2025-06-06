@@ -2,14 +2,15 @@ program Interval;
 
 uses
   Vcl.Forms,
-  UFormInterval in 'UFormInterval.pas' {Form1},
-  UAvlTree in 'UAvlTree.pas';
+  UFormInterval in 'UFormInterval.pas' {FormInterval},
+  UAvlTree in 'UAvlTree.pas',
+  UDisjointInterval in 'UDisjointInterval.pas';
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TFormInterval, FormInterval);
   Application.Run;
 end.
