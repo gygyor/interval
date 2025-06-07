@@ -32,6 +32,8 @@ type
   published
     procedure TestAdd;
     procedure TestRemove;
+    procedure TestIsPointIn;
+    procedure TestGetIntervalAt;
   end;
 
 implementation
@@ -155,6 +157,34 @@ begin
   finally
     FreeAndNil(Enumerator);
   end;
+end;
+
+procedure TestTDisjointIntervals.TestGetIntervalAt;
+begin
+  FDisjointIntervals.Add(TInterval<string>.Create(1, 3, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(4, 6, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(7, 9, 'x'));
+  CheckEquals(FDisjointIntervals.GetIntervalAt(5).Close, 6);
+
+  CheckException(
+      procedure
+      begin
+        FDisjointIntervals.GetIntervalAt(6);
+      end,
+      EIntervalNotFound
+    );
+end;
+
+procedure TestTDisjointIntervals.TestIsPointIn;
+begin
+  FDisjointIntervals.Add(TInterval<string>.Create(1, 3, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(5, 6, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(8, 10, 'x'));
+  CheckFalse(FDisjointIntervals.IsPointIn(4));
+  CheckFalse(FDisjointIntervals.IsPointIn(0));
+  CheckTrue(FDisjointIntervals.IsPointIn(1));
+  CheckFalse(FDisjointIntervals.IsPointIn(3));
+  CheckTrue(FDisjointIntervals.IsPointIn(9));
 end;
 
 procedure TestTDisjointIntervals.TestRemove;

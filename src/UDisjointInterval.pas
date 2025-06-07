@@ -52,6 +52,10 @@ type
   TOnMerge<T> = procedure(const Intervals: TIntervalList<T>; var NewData: T) of object;
   TOnSplit<T> = procedure(const Interval1, Interval2: TIntervalConflictResolution<T>) of object;
 
+  EIntervalNotFound = class(Exception)
+    constructor Create;
+  end;
+
   TDisjointIntervals<T> = class
   private
     FOnMerge: TOnMerge<T>;
@@ -72,6 +76,8 @@ type
 
     procedure Add(Interval: TInterval<T>);
     procedure Remove(Interval: TInterval<T>);
+    function GetIntervalAt(Pos: Integer): TInterval<T>;
+    function IsPointIn(Pos: Integer): boolean;
 
     function Count: integer;
     procedure Clear;
@@ -178,6 +184,18 @@ begin
   Result := TIntervalIterator<T>.Create(Items.Min);
 end;
 
+function TDisjointIntervals<T>.GetIntervalAt(Pos: Integer): TInterval<T>;
+var
+  i: TItem;
+begin
+  i := Items.SearchItemOrPrev(Pos);
+  if not Assigned(i) then
+    raise EIntervalNotFound.Create;
+  if i.Data.Close > Pos then
+    Exit(i.Data);
+  raise EIntervalNotFound.Create;
+end;
+
 procedure TDisjointIntervals<T>.GetTouchOrIntersectItems(const Interval: TInterval<T>;
   Target: TList<TItem>);
 var
@@ -194,6 +212,16 @@ begin
       Target.Add(i);
     i := i.Next;
   end;
+end;
+
+function TDisjointIntervals<T>.IsPointIn(Pos: Integer): boolean;
+var
+  i: TItem;
+begin
+  i := Items.SearchItemOrPrev(Pos);
+  if not Assigned(i) then
+    Exit(false);
+  Result := i.Data.Close > Pos;
 end;
 
 procedure TDisjointIntervals<T>.Remove(Interval: TInterval<T>);
@@ -351,6 +379,13 @@ end;
 procedure TIntervalIterator<T>.Reset;
 begin
   FReseted := True;
+end;
+
+{ EIntervalNotFound }
+
+constructor EIntervalNotFound.Create;
+begin
+  inherited Create('Interval not found');
 end;
 
 end.
