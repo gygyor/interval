@@ -3,7 +3,7 @@ unit UDisjointInterval;
 interface
 
 uses
-  SysUtils, UAvlTree;
+  SysUtils, Generics.Collections, UAvlTree;
 
 type
   TInterval<T> = record
@@ -65,6 +65,7 @@ type
     Items: TItems;
     procedure DoOnMerge(const Intervals: TIntervalList<T>; var NewData: T); virtual;
     procedure DoOnSplit(const Interval1, Interval2: TIntervalConflictResolution<T>); virtual;
+    procedure GetTouchOrIntersectItems(const Interval: TInterval<T>; Target: TList<TItem>);
   public
     property OnMerge: TOnMerge<T> read FOnMerge write SetOnMerge;
     property OnSplit: TOnSplit<T> read FOnSplit write SetOnSplit;
@@ -72,8 +73,6 @@ type
     procedure Add(Interval: TInterval<T>);
     procedure Remove(Interval: TInterval<T>);
 
-    function Min: TIntervalIterator<T>;
-    function Max: TIntervalIterator<T>;
     function Count: integer;
     procedure Clear;
     function GetEnumerator: TIntervalIterator<T>;
@@ -85,7 +84,7 @@ type
 implementation
 
 uses
-  Generics.Defaults, Generics.Collections, Math;
+  Generics.Defaults, Math;
 
 { TDisjointIntervals<T> }
 
@@ -99,10 +98,7 @@ begin
   if Interval.Start >= Interval.Close then
     Exit;
 
-  i := Items.SearchItemOrPrev(Interval.Start);
-  if not Assigned(i) then
-    i := Items.Min;
-  if not Assigned(i) then
+  if Items.Count = 0 then
   begin
     TItem.Create(Items, Interval.Start).Data := Interval;
     Exit;
@@ -110,12 +106,7 @@ begin
 
   TouchOrIntersectItems := TList<TItem>.Create;
   try
-    while Assigned(i) and (i.Data.Start <= Interval.Close) do
-    begin
-      if Interval.TouchOrIntersect(i.Data) then
-        TouchOrIntersectItems.Add(i);
-      i := i.Next;
-    end;
+    GetTouchOrIntersectItems(Interval, TouchOrIntersectItems);
 
     if TouchOrIntersectItems.Count > 0 then
     begin
@@ -184,22 +175,91 @@ end;
 
 function TDisjointIntervals<T>.GetEnumerator: TIntervalIterator<T>;
 begin
-  Result := Min;
-end;
-
-function TDisjointIntervals<T>.Max: TIntervalIterator<T>;
-begin
-  Result := TIntervalIterator<T>.Create(Items.Max);
-end;
-
-function TDisjointIntervals<T>.Min: TIntervalIterator<T>;
-begin
   Result := TIntervalIterator<T>.Create(Items.Min);
 end;
 
-procedure TDisjointIntervals<T>.Remove(Interval: TInterval<T>);
+procedure TDisjointIntervals<T>.GetTouchOrIntersectItems(const Interval: TInterval<T>;
+  Target: TList<TItem>);
+var
+  i: TItem;
 begin
-  // todo 1: *****
+  Target.Clear;
+  i := Items.SearchItemOrPrev(Interval.Start);
+  if not Assigned(i) then
+    i := Items.Min;
+
+  while Assigned(i) and (i.Data.Start <= Interval.Close) do
+  begin
+    if Interval.TouchOrIntersect(i.Data) then
+      Target.Add(i);
+    i := i.Next;
+  end;
+end;
+
+procedure TDisjointIntervals<T>.Remove(Interval: TInterval<T>);
+var
+  i: TItem;
+  TouchOrIntersectItems: TList<TItem>;
+  MergeList: TList<TInterval<T> >;
+  NewData: T;
+  Interval1, Interval2: TInterval<T>;
+  Interval1CR, Interval2CR: TIntervalConflictResolution<T>;
+begin
+  if Interval.Start >= Interval.Close then
+    Exit;
+
+  if Items.Count = 0 then
+    Exit;
+
+  TouchOrIntersectItems := TList<TItem>.Create;
+  try
+    GetTouchOrIntersectItems(Interval, TouchOrIntersectItems);
+
+    if TouchOrIntersectItems.Count = 0 then
+      Exit;
+
+    if (TouchOrIntersectItems.Count = 1)
+       and (Interval.Start > TouchOrIntersectItems[0].Data.Start)
+       and (Interval.Close < TouchOrIntersectItems[0].Data.Close)
+    then begin
+      Items.DeleteItem(TouchOrIntersectItems[0]);
+      Interval1 := TInterval<T>.Create(
+                       TouchOrIntersectItems[0].Data.Start,
+                       Interval.Start,
+                       TouchOrIntersectItems[0].Data.Data);
+      Interval2 := TInterval<T>.Create(
+                       Interval.Close,
+                       TouchOrIntersectItems[0].Data.Close,
+                       TouchOrIntersectItems[0].Data.Data);
+
+      Interval1CR := TIntervalConflictResolution<T>.Create(Interval1);
+      Interval2CR := TIntervalConflictResolution<T>.Create(Interval2);
+      DoOnSplit(Interval1CR, Interval2CR);
+
+      Interval1.Data := Interval1CR.NewData;
+      Interval2.Data := Interval2CR.NewData;
+
+      Items.DeleteItem(TouchOrIntersectItems[0]);
+
+      TItem.Create(Items, Interval1.Start).Data := Interval1;
+      TItem.Create(Items, Interval2.Start).Data := Interval2;
+      Exit;
+    end;
+
+    Interval1 := TouchOrIntersectItems[0].Data;
+    Interval1.Close := Interval.Start;
+
+    Interval2 := TouchOrIntersectItems[TouchOrIntersectItems.Count - 1].Data;
+    Interval2.Start := Interval.Close;
+
+    for i in TouchOrIntersectItems do
+      Items.DeleteItem(i);
+
+    Add(Interval1);
+    Add(Interval2);
+  finally
+    TouchOrIntersectItems.Free;
+  end;
 end;
 
 procedure TDisjointIntervals<T>.SetOnMerge(const Value: TOnMerge<T>);

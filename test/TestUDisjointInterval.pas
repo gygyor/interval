@@ -22,6 +22,7 @@ type
     FDisjointIntervals: TDisjointIntervals<string>;
   protected
     procedure OnMerge(const Intervals: TIntervalList<string>; var NewData: string);
+    procedure OnSplit(const Interval1, Interval2: TIntervalConflictResolution<string>);
   public
     procedure SetUp; override;
     procedure TearDown; override;
@@ -31,8 +32,6 @@ type
   published
     procedure TestAdd;
     procedure TestRemove;
-    procedure TestMin;
-    procedure TestMax;
   end;
 
 implementation
@@ -64,6 +63,13 @@ begin
   end;
 end;
 
+procedure TestTDisjointIntervals.OnSplit(const Interval1,
+  Interval2: TIntervalConflictResolution<string>);
+begin
+  Interval1.NewData := Interval1.NewData + '1';
+  Interval2.NewData := Interval2.NewData + '2';
+end;
+
 procedure TestTDisjointIntervals.Print;
 var
   i: TInterval<string>;
@@ -78,6 +84,7 @@ procedure TestTDisjointIntervals.SetUp;
 begin
   FDisjointIntervals := TDisjointIntervals<string>.Create;
   FDisjointIntervals.OnMerge := OnMerge;
+  FDisjointIntervals.OnSplit := OnSplit;
 end;
 
 procedure TestTDisjointIntervals.TearDown;
@@ -151,18 +158,52 @@ begin
 end;
 
 procedure TestTDisjointIntervals.TestRemove;
+var
+  Enumerator: TIntervalIterator<string>;
 begin
-  // todo 1: ****
-end;
+  FDisjointIntervals.Add(TInterval<string>.Create(1, 3, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(4, 6, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(7, 9, 'x'));
 
-procedure TestTDisjointIntervals.TestMin;
-begin
-  // todo 1: ****
-end;
+  FDisjointIntervals.Remove(TInterval<string>.Create(3, 4));
+  Enumerator := FDisjointIntervals.GetEnumerator;
+  try
+    CheckIntervals(Enumerator, 1, 3, 'x');
+    CheckIntervals(Enumerator, 4, 6, 'x');
+    CheckIntervals(Enumerator, 7, 9, 'x');
+    CheckFalse(Enumerator.MoveNext);
+  finally
+    FreeAndNil(Enumerator);
+  end;
 
-procedure TestTDisjointIntervals.TestMax;
-begin
-  // todo 1: ****
+  FDisjointIntervals.Remove(TInterval<string>.Create(2, 8));
+  Enumerator := FDisjointIntervals.GetEnumerator;
+  try
+    CheckIntervals(Enumerator, 1, 2, 'x');
+    CheckIntervals(Enumerator, 8, 9, 'x');
+    CheckFalse(Enumerator.MoveNext);
+  finally
+    FreeAndNil(Enumerator);
+  end;
+
+  FDisjointIntervals.Add(TInterval<string>.Create(2, 8, 'y'));
+  Enumerator := FDisjointIntervals.GetEnumerator;
+  try
+    CheckIntervals(Enumerator, 1, 9, 'x, x, y');
+    CheckFalse(Enumerator.MoveNext);
+  finally
+    FreeAndNil(Enumerator);
+  end;
+
+  FDisjointIntervals.Remove(TInterval<string>.Create(2, 8));
+  Enumerator := FDisjointIntervals.GetEnumerator;
+  try
+    CheckIntervals(Enumerator, 1, 2, 'x, x, y1');
+    CheckIntervals(Enumerator, 8, 9, 'x, x, y2');
+    CheckFalse(Enumerator.MoveNext);
+  finally
+    FreeAndNil(Enumerator);
+  end;
 end;
 
 initialization
