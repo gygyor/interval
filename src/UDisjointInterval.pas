@@ -120,7 +120,8 @@ begin
     if TouchOrIntersectItems.Count > 0 then
     begin
       Interval.Start := Math.Min(Interval.Start, TouchOrIntersectItems[0].Data.Start);
-      Interval.Close := Math.Max(Interval.Close, TouchOrIntersectItems[0].Data.Close);
+      Interval.Close := Math.Max(Interval.Close,
+                                 TouchOrIntersectItems[TouchOrIntersectItems.Count - 1].Data.Close);
     end;
 
     for i in TouchOrIntersectItems do
