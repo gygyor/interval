@@ -28,7 +28,8 @@ type
     procedure TearDown; override;
 
     procedure Print;
-    procedure CheckIntervals(Enumerator: TIntervalIterator<string>; Start, Close: Integer; Data: string);
+    procedure CheckIntervals(Enumerator: TIntervalIterator<string>; Start, Close: Integer); overload;
+    procedure CheckIntervals(Enumerator: TIntervalIterator<string>; Start, Close: Integer; Data: string); overload;
   published
     procedure TestAdd;
     procedure TestRemove;
@@ -45,6 +46,14 @@ begin
   CheckEquals(Enumerator.Current.Start, Start);
   CheckEquals(Enumerator.Current.Close, Close);
   CheckEquals(Enumerator.Current.Data, Data);
+end;
+
+procedure TestTDisjointIntervals.CheckIntervals(Enumerator: TIntervalIterator<string>; Start,
+  Close: Integer);
+begin
+  CheckTrue(Enumerator.MoveNext);
+  CheckEquals(Enumerator.Current.Start, Start);
+  CheckEquals(Enumerator.Current.Close, Close);
 end;
 
 procedure TestTDisjointIntervals.OnMerge(const Intervals: TIntervalList<string>;
@@ -230,6 +239,16 @@ begin
   try
     CheckIntervals(Enumerator, 1, 2, 'x, x, y1');
     CheckIntervals(Enumerator, 8, 9, 'x, x, y2');
+    CheckFalse(Enumerator.MoveNext);
+  finally
+    FreeAndNil(Enumerator);
+  end;
+
+  FDisjointIntervals.Add(TInterval<string>.Create(0, 10, 'x'));
+  FDisjointIntervals.Remove(TInterval<string>.Create(5, 20));
+  Enumerator := FDisjointIntervals.GetEnumerator;
+  try
+    CheckIntervals(Enumerator, 0, 5);
     CheckFalse(Enumerator.MoveNext);
   finally
     FreeAndNil(Enumerator);
