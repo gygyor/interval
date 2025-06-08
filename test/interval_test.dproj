@@ -91,6 +91,7 @@
         <DCCReference Include="TestUAvlTree.pas"/>
         <DCCReference Include="TestUDisjointInterval.pas"/>
         <DCCReference Include="..\src\UDisjointInterval.pas"/>
+        <DCCReference Include="TestUAvlTreeObject.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

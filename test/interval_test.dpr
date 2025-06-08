@@ -18,7 +18,8 @@ uses
   DUnitTestRunner,
   TestUAvlTree in 'TestUAvlTree.pas',
   TestUDisjointInterval in 'TestUDisjointInterval.pas',
-  UDisjointInterval in '..\src\UDisjointInterval.pas';
+  UDisjointInterval in '..\src\UDisjointInterval.pas',
+  TestUAvlTreeObject in 'TestUAvlTreeObject.pas';
 
 {$R *.RES}
 
