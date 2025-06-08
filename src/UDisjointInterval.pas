@@ -228,8 +228,6 @@ procedure TDisjointIntervals<T>.Remove(Interval: TInterval<T>);
 var
   i: TItem;
   TouchOrIntersectItems: TList<TItem>;
-  MergeList: TList<TInterval<T> >;
-  NewData: T;
   Interval1, Interval2: TInterval<T>;
   Interval1CR, Interval2CR: TIntervalConflictResolution<T>;
 begin
