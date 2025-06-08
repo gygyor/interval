@@ -16,9 +16,9 @@ object FormInterval: TFormInterval
   OnShow = FormShow
   TextHeight = 13
   object SplitterMain: TSplitter
-    Left = 402
-    Top = 64
-    Height = 498
+    Left = 200
+    Top = 70
+    Height = 492
     ExplicitLeft = 16
     ExplicitTop = 128
     ExplicitHeight = 100
@@ -27,7 +27,7 @@ object FormInterval: TFormInterval
     Left = 0
     Top = 0
     Width = 843
-    Height = 64
+    Height = 70
     Align = alTop
     AutoSize = True
     BevelOuter = bvNone
@@ -36,12 +36,12 @@ object FormInterval: TFormInterval
       Left = 0
       Top = 0
       Width = 329
-      Height = 64
+      Height = 70
       BevelOuter = bvNone
       TabOrder = 0
-      object LabelIntervalPart1: TLabel
+      object lblIntervalPart1: TLabel
         Left = 0
-        Top = 8
+        Top = 7
         Width = 14
         Height = 45
         Caption = '['
@@ -52,9 +52,9 @@ object FormInterval: TFormInterval
         Font.Style = []
         ParentFont = False
       end
-      object LabelIntervalPart2: TLabel
+      object lblIntervalPart2: TLabel
         Left = 144
-        Top = 8
+        Top = 7
         Width = 11
         Height = 45
         Caption = ','
@@ -65,9 +65,9 @@ object FormInterval: TFormInterval
         Font.Style = []
         ParentFont = False
       end
-      object LabelIntervalPart3: TLabel
+      object lblIntervalPart3: TLabel
         Left = 296
-        Top = 8
+        Top = 7
         Width = 14
         Height = 45
         Caption = ')'
@@ -80,7 +80,7 @@ object FormInterval: TFormInterval
       end
       object EditIntervalStart: TEdit
         Left = 17
-        Top = 23
+        Top = 22
         Width = 121
         Height = 21
         TabOrder = 0
@@ -88,11 +88,31 @@ object FormInterval: TFormInterval
       end
       object EditIntervalClose: TEdit
         Left = 169
-        Top = 23
+        Top = 22
         Width = 121
         Height = 21
         TabOrder = 1
         OnChange = EditIntervalChange
+      end
+      object tbIntervalStart: TTrackBar
+        Left = 20
+        Top = 49
+        Width = 118
+        Height = 20
+        Max = 100
+        TabOrder = 2
+        TabStop = False
+        OnChange = tbIntervalStartChange
+      end
+      object tbIntervalClose: TTrackBar
+        Left = 169
+        Top = 49
+        Width = 121
+        Height = 20
+        Max = 100
+        TabOrder = 3
+        TabStop = False
+        OnChange = tbIntervalCloseChange
       end
     end
     object PanelButtons: TPanel
@@ -103,17 +123,41 @@ object FormInterval: TFormInterval
       BevelOuter = bvNone
       TabOrder = 1
       object ShapeColor: TShape
-        Left = 8
-        Top = 8
+        Left = 12
+        Top = 7
         Width = 65
-        Height = 50
+        Height = 57
         OnMouseActivate = ShapeColorMouseActivate
       end
-      object ButtonAdd: TBitBtn
-        Left = 169
-        Top = 8
+      object sbRandomColor: TSpeedButton
+        Left = 53
+        Top = 41
+        Width = 22
+        Height = 22
+        Glyph.Data = {
+          EE010000424DEE01000000000000EE0000002800000010000000100000000100
+          08000000000000010000130B0000130B00002E0000002E000000FFFFFF001E1E
+          1E0000000000F4F4F4000E0E0E00828282007D7D7D001B1B1B00181818001010
+          100013131300F7F7F70017171700AFAFAF0009090900DCDCDC009E9E9E00EDED
+          ED00A8A8A800C7C7C700C0C0C000B3B3B300E3E3E30041414100EFEFEF006161
+          61006C6C6C00676767002D2D2D00363636008E8E8E00D7D7D70028282800CDCD
+          CD009696960058585800737373003D3D3D002323230048484800323232004747
+          4700C3C3C300535353009A9A9A00919191000000172327272727272727272317
+          00000020010707070707070707070701200029011F000000000000000000001F
+          012923070018121F000000001F12180007232B070012011D000000001D011200
+          072B2B07001F1D1200000000121D1F00072B2B07000000000016160000000000
+          072B2B07000000001601011600000000072B2B07000000001601011600000000
+          072B2B07000000000016160000000000072B2B07001F1D1200000000121D1F00
+          072B2B070012011D000000001D011200072B23070018121F000000001F121800
+          072317011F000000000000000000001F01170020010707070707070707070701
+          20000000172B27272727272727272B170000}
+        OnClick = sbRandomColorClick
+      end
+      object btnAdd: TBitBtn
+        Left = 173
+        Top = 7
         Width = 84
-        Height = 50
+        Height = 57
         Caption = 'Add'
         Default = True
         Glyph.Data = {
@@ -313,13 +357,13 @@ object FormInterval: TFormInterval
           FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
         NumGlyphs = 2
         TabOrder = 1
-        OnClick = ButtonAddClick
+        OnClick = btnAddClick
       end
-      object ButtonRemove: TBitBtn
-        Left = 259
-        Top = 8
+      object btnRemove: TBitBtn
+        Left = 263
+        Top = 7
         Width = 84
-        Height = 50
+        Height = 57
         Caption = 'Remove'
         Glyph.Data = {
           36180000424D3618000000000000360000002800000040000000200000000100
@@ -518,13 +562,13 @@ object FormInterval: TFormInterval
           DFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDFDF}
         NumGlyphs = 2
         TabOrder = 2
-        OnClick = ButtonRemoveClick
+        OnClick = btnRemoveClick
       end
-      object ButtonColor: TBitBtn
-        Left = 79
-        Top = 8
+      object btnColor: TBitBtn
+        Left = 83
+        Top = 7
         Width = 84
-        Height = 50
+        Height = 57
         Caption = 'Color'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -664,52 +708,59 @@ object FormInterval: TFormInterval
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00}
         ParentFont = False
         TabOrder = 0
-        OnClick = ButtonColorClick
+        OnClick = btnColorClick
       end
     end
   end
   object PanelLeft: TPanel
     Left = 0
-    Top = 64
-    Width = 402
-    Height = 498
+    Top = 70
+    Width = 200
+    Height = 492
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
-    object LabelCount: TLabel
+    object lblCount: TLabel
       Left = 0
-      Top = 485
-      Width = 402
+      Top = 479
+      Width = 200
       Height = 13
       Align = alBottom
       Alignment = taRightJustify
       ExplicitLeft = 399
+      ExplicitTop = 485
       ExplicitWidth = 3
     end
     object ListBoxResult: TListBox
       Left = 0
       Top = 0
-      Width = 402
-      Height = 485
+      Width = 200
+      Height = 479
       Style = lbOwnerDrawFixed
       Align = alClient
       ItemHeight = 13
       TabOrder = 0
       OnDrawItem = ListBoxResultDrawItem
+      ExplicitWidth = 402
+      ExplicitHeight = 485
     end
   end
   object PanelClient: TPanel
-    Left = 405
-    Top = 64
-    Width = 438
-    Height = 498
+    Left = 203
+    Top = 70
+    Width = 640
+    Height = 492
     Align = alClient
     TabOrder = 2
+    ExplicitLeft = 405
+    ExplicitTop = 64
+    ExplicitWidth = 438
+    ExplicitHeight = 498
     object PaintBoxResult: TPaintBox
       Left = 1
       Top = 1
-      Width = 436
-      Height = 483
+      Width = 638
+      Height = 477
       Align = alClient
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -722,20 +773,23 @@ object FormInterval: TFormInterval
       OnPaint = PaintBoxResultPaint
       ExplicitLeft = 3
       ExplicitTop = 0
+      ExplicitWidth = 436
+      ExplicitHeight = 483
     end
-    object LabelSelection: TLabel
+    object lblSelection: TLabel
       Left = 1
-      Top = 484
-      Width = 436
+      Top = 478
+      Width = 638
       Height = 13
       Align = alBottom
       Alignment = taCenter
+      ExplicitTop = 484
       ExplicitWidth = 3
     end
   end
   object ColorDialog: TColorDialog
-    Left = 369
-    Top = 24
+    Left = 17
+    Top = 96
   end
   object TimerListSelectionWatcher: TTimer
     Enabled = False
