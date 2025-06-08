@@ -79,6 +79,9 @@ type
     function GetIntervalAt(Pos: Integer): TInterval<T>;
     function IsPointIn(Pos: Integer): boolean;
 
+    function Min: TInterval<T>;
+    function Max: TInterval<T>;
+
     function Count: integer;
     procedure Clear;
     function GetEnumerator: TIntervalIterator<T>;
@@ -222,6 +225,30 @@ begin
   if not Assigned(i) then
     Exit(false);
   Result := i.Data.Close > Pos;
+end;
+
+function TDisjointIntervals<T>.Max: TInterval<T>;
+var
+  R: TItem;
+begin
+  R := Items.Max;
+
+  if not Assigned(R) then
+    raise EIntervalNotFound.Create;
+
+  Result := R.Data;
+end;
+
+function TDisjointIntervals<T>.Min: TInterval<T>;
+var
+  R: TItem;
+begin
+  R := Items.Min;
+
+  if not Assigned(R) then
+    raise EIntervalNotFound.Create;
+
+  Result := R.Data;
 end;
 
 procedure TDisjointIntervals<T>.Remove(Interval: TInterval<T>);

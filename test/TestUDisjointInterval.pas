@@ -35,6 +35,7 @@ type
     procedure TestRemove;
     procedure TestIsPointIn;
     procedure TestGetIntervalAt;
+    procedure TestMinMax;
   end;
 
 implementation
@@ -194,6 +195,25 @@ begin
   CheckTrue(FDisjointIntervals.IsPointIn(1));
   CheckFalse(FDisjointIntervals.IsPointIn(3));
   CheckTrue(FDisjointIntervals.IsPointIn(9));
+end;
+
+procedure TestTDisjointIntervals.TestMinMax;
+begin
+  CheckException(
+      procedure
+      begin
+        FDisjointIntervals.Min;
+      end,
+      EIntervalNotFound
+    );
+
+  FDisjointIntervals.Add(TInterval<string>.Create(1, 3, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(4, 6, 'x'));
+  FDisjointIntervals.Add(TInterval<string>.Create(7, 9, 'x'));
+
+  CheckEquals(FDisjointIntervals.Min.Start, 1);
+  CheckEquals(FDisjointIntervals.Max.Start, 7);
+  CheckEquals(FDisjointIntervals.Max.Close, 9);
 end;
 
 procedure TestTDisjointIntervals.TestRemove;
