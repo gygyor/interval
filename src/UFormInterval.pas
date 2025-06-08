@@ -412,6 +412,7 @@ end;
 procedure TFormInterval.sbRandomColorClick(Sender: TObject);
 begin
   ShapeColor.Brush.Color := Random($ffffff);
+  PaintBoxResult.Invalidate;
 end;
 
 procedure TFormInterval.tbIntervalCloseChange(Sender: TObject);
