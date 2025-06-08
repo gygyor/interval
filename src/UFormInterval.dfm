@@ -23,20 +23,6 @@ object FormInterval: TFormInterval
     ExplicitTop = 128
     ExplicitHeight = 100
   end
-  object PaintBoxResult: TPaintBox
-    Left = 405
-    Top = 64
-    Width = 438
-    Height = 498
-    Align = alClient
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Verdana'
-    Font.Style = []
-    ParentFont = False
-    ExplicitLeft = 408
-  end
   object FlowPanelTop: TFlowPanel
     Left = 0
     Top = 0
@@ -714,8 +700,55 @@ object FormInterval: TFormInterval
       OnDrawItem = ListBoxResultDrawItem
     end
   end
+  object PanelClient: TPanel
+    Left = 405
+    Top = 64
+    Width = 438
+    Height = 498
+    Align = alClient
+    TabOrder = 2
+    ExplicitLeft = 488
+    ExplicitTop = 248
+    ExplicitWidth = 185
+    ExplicitHeight = 41
+    object PaintBoxResult: TPaintBox
+      Left = 1
+      Top = 1
+      Width = 436
+      Height = 483
+      Align = alClient
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Verdana'
+      Font.Style = []
+      ParentFont = False
+      OnMouseLeave = PaintBoxResultMouseLeave
+      OnMouseMove = PaintBoxResultMouseMove
+      OnPaint = PaintBoxResultPaint
+      ExplicitLeft = 3
+      ExplicitTop = 0
+    end
+    object LabelSelection: TLabel
+      Left = 1
+      Top = 484
+      Width = 436
+      Height = 13
+      Align = alBottom
+      Alignment = taCenter
+      ExplicitLeft = 434
+      ExplicitWidth = 3
+    end
+  end
   object ColorDialog: TColorDialog
     Left = 369
     Top = 24
+  end
+  object TimerListSelectionWatcher: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = TimerListSelectionWatcherTimer
+    Left = 368
+    Top = 512
   end
 end

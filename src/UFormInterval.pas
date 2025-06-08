@@ -27,6 +27,9 @@ type
     PanelLeft: TPanel;
     LabelCount: TLabel;
     ColorDialog: TColorDialog;
+    TimerListSelectionWatcher: TTimer;
+    PanelClient: TPanel;
+    LabelSelection: TLabel;
     procedure EditIntervalChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure ButtonAddClick(Sender: TObject);
@@ -37,9 +40,18 @@ type
     procedure ButtonRemoveClick(Sender: TObject);
     procedure ShapeColorMouseActivate(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
       Y, HitTest: Integer; var MouseActivate: TMouseActivate);
+    procedure PaintBoxResultPaint(Sender: TObject);
+    procedure TimerListSelectionWatcherTimer(Sender: TObject);
+    procedure PaintBoxResultMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure PaintBoxResultMouseLeave(Sender: TObject);
   protected
     DisjointIntervals: TDisjointIntervals<TColor>;
+    LastSelectedIndex: Integer;
     function UpdateForm: boolean;
+    function CalculateWindowDimension(out WindowMin, WindowMax, WindowWidth,
+                                          NewInvervalStart, NewIntervalClose: Integer;
+                                      out NewIntervalGood, HasAddedInterval: boolean): boolean;
+    procedure UpdatePaintBoxSelection(X: Integer);
     procedure OnMerge(const Intervals: TIntervalList<TColor>; var NewData: TColor);
     procedure OnSplit(const Interval1, Interval2: TIntervalConflictResolution<TColor>);
 
@@ -54,7 +66,7 @@ implementation
 {$R *.dfm}
 
 uses
-  UITypes;
+  UITypes, Math;
 
 const
   COLOR_INVALID = $A0A0FF;
@@ -94,7 +106,10 @@ end;
 procedure TFormInterval.ButtonColorClick(Sender: TObject);
 begin
   if ColorDialog.Execute then
+  begin
     ShapeColor.Brush.Color := ColorDialog.Color;
+    PaintBoxResult.Invalidate;
+  end;
 end;
 
 procedure TFormInterval.ButtonRemoveClick(Sender: TObject);
@@ -114,6 +129,47 @@ begin
   end;
 end;
 
+function TFormInterval.CalculateWindowDimension(out WindowMin, WindowMax,
+  WindowWidth, NewInvervalStart, NewIntervalClose: Integer;
+  out NewIntervalGood, HasAddedInterval: boolean): boolean;
+begin
+  WindowMin := 0;
+  WindowMax := 0;
+  WindowWidth := 0;
+  Result := False;
+
+  HasAddedInterval := False;
+  NewIntervalGood :=
+      TryStrToInt(EditIntervalStart.Text, NewInvervalStart)
+      and TryStrToInt(EditIntervalClose.Text, NewIntervalClose)
+      and (NewIntervalClose > NewInvervalStart);
+  try
+    WindowMin := DisjointIntervals.Min.Start;
+    WindowMax := DisjointIntervals.Max.Close;
+    HasAddedInterval := True;
+
+    if NewIntervalGood then
+    begin
+      WindowMin := Min(WindowMin, NewInvervalStart);
+      WindowMax := Max(WindowMax, NewIntervalClose);
+    end;
+
+    WindowWidth := WindowMax - WindowMin;
+    Result := True;
+  except
+    On EIntervalNotFound do
+    begin
+      if NewIntervalGood then
+      begin
+        WindowMin := NewInvervalStart;
+        WindowMax := NewIntervalClose;
+        WindowWidth := WindowMax - WindowMin;
+        Result := True;
+      end;
+    end;
+  end;
+end;
+
 procedure TFormInterval.EditIntervalChange(Sender: TObject);
 begin
   UpdateForm;
@@ -124,6 +180,9 @@ begin
   DisjointIntervals := TDisjointIntervals<TColor>.Create;
   DisjointIntervals.OnMerge := OnMerge;
   DisjointIntervals.OnSplit := OnSplit;
+
+  LastSelectedIndex := -1;
+  TimerListSelectionWatcher.Enabled := True;
 
   InitDemoData;
 
@@ -238,10 +297,118 @@ begin
       or (MoveColorChannel((Interval2.NewData shr 16) and $ff, 0, 0.3) shl 16);
 end;
 
+procedure TFormInterval.PaintBoxResultMouseLeave(Sender: TObject);
+begin
+  LabelSelection.Caption := '';
+end;
+
+procedure TFormInterval.PaintBoxResultMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+  UpdatePaintBoxSelection(X);
+end;
+
+procedure TFormInterval.PaintBoxResultPaint(Sender: TObject);
+
+  procedure DrawHBar(MyCanvas: TCanvas; X1,X2, YCenter, Height: Integer; Color: TColor);
+  var
+    Rect: TRect;
+  begin
+    // todo 1: to remove
+    {
+    MyCanvas.Pen.Width := Height;
+    MyCanvas.Pen.Color := Color;
+    MyCanvas.MoveTo(X1, YCenter);
+    MyCanvas.LineTo(X2, YCenter);
+    }
+
+    MyCanvas.Pen.Width := 1;
+    MyCanvas.Pen.Color := clDkGray;
+    MyCanvas.Brush.Color := Color;
+    Rect:=TRect.Create(x1, YCenter - (Height - 1) div 2, x2, YCenter + Height div 2);
+    MyCanvas.Rectangle(Rect);
+  end;
+
+const
+  AXIS_PEN_WIDTH = 3;
+  ITEM_PEN_WIDTH = 5;
+  ITEM_PEN_HIGHTLIGHT_WIDTH = 9;
+  AXIS_DISTANCE = 8;
+var
+  MyCanvas: TCanvas;
+  Rect: TRect;
+
+  AddedIntervalYPos, NewIntervalYPos: Integer;
+  WindowMin, WindowMax, WindowWidth: Integer;
+  NewInvervalStart, NewIntervalClose: integer;
+  NewIntervalGood, HasAddedInterval: boolean;
+
+  idx: integer;
+  BarHeight: integer;
+begin
+  MyCanvas := (Sender as TPaintBox).Canvas;
+  Rect := (Sender as TPaintBox).ClientRect;
+  MyCanvas.Brush.Color := clWhite;
+  MyCanvas.FillRect(Rect);
+
+  MyCanvas.Pen.Width := AXIS_PEN_WIDTH;
+  MyCanvas.Pen.Color := clBlack;
+  MyCanvas.MoveTo(Rect.Left, Rect.CenterPoint.Y);
+  MyCanvas.LineTo(Rect.Right, Rect.CenterPoint.Y);
+
+  CalculateWindowDimension(WindowMin, WindowMax, WindowWidth, NewInvervalStart,
+                           NewIntervalClose, NewIntervalGood, HasAddedInterval);
+
+  if HasAddedInterval then
+  begin
+    // draw added items
+    AddedIntervalYPos := Rect.CenterPoint.Y - AXIS_DISTANCE;
+
+    idx := 0;
+    for var item in DisjointIntervals do
+    begin
+      if idx = ListBoxResult.ItemIndex then
+        BarHeight := ITEM_PEN_HIGHTLIGHT_WIDTH
+      else
+        BarHeight := ITEM_PEN_WIDTH;
+
+      DrawHBar(MyCanvas,
+               Rect.Left + Trunc((item.Start - WindowMin) / WindowWidth * Rect.Width),
+               Rect.Left + Trunc((item.Close - WindowMin) / WindowWidth * Rect.Width),
+               AddedIntervalYPos,
+               BarHeight,
+               item.Data);
+
+      inc(idx);
+    end;
+  end;
+
+  // draw new item
+  NewIntervalYPos := Rect.CenterPoint.Y + AXIS_DISTANCE;
+
+  if NewIntervalGood then
+  begin
+    DrawHBar(MyCanvas,
+             Rect.Left + Trunc((NewInvervalStart - WindowMin) / WindowWidth * Rect.Width),
+             Rect.Left + Trunc((NewIntervalClose - WindowMin) / WindowWidth * Rect.Width),
+             NewIntervalYPos,
+             ITEM_PEN_WIDTH,
+             ShapeColor.Brush.Color);
+  end;
+end;
+
 procedure TFormInterval.ShapeColorMouseActivate(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y, HitTest: Integer; var MouseActivate: TMouseActivate);
 begin
   ButtonColor.Click;
+end;
+
+procedure TFormInterval.TimerListSelectionWatcherTimer(Sender: TObject);
+begin
+  if LastSelectedIndex <> ListBoxResult.ItemIndex then
+  begin
+    LastSelectedIndex := ListBoxResult.ItemIndex;
+    PaintBoxResult.Invalidate;
+  end;
 end;
 
 function TFormInterval.UpdateForm: boolean;
@@ -279,6 +446,26 @@ begin
   LabelCount.Caption := Format('Count: %d', [DisjointIntervals.Count]);
 
   PaintBoxResult.Invalidate;
+end;
+
+procedure TFormInterval.UpdatePaintBoxSelection(X: Integer);
+const
+  MSG_INCLUDED: array[Boolean] of string = ('Not included', 'Included');
+var
+  WindowMin, WindowMax, WindowWidth: Integer;
+  NewInvervalStart, NewIntervalClose: integer;
+  NewIntervalGood, HasAddedInterval: boolean;
+
+  CurrentPosition: Integer;
+  PointIncluded: Boolean;
+begin
+  CalculateWindowDimension(WindowMin, WindowMax, WindowWidth, NewInvervalStart,
+                           NewIntervalClose, NewIntervalGood, HasAddedInterval);
+
+  CurrentPosition := Trunc(X / PaintBoxResult.ClientWidth * WindowWidth) + WindowMin;
+
+  PointIncluded := DisjointIntervals.IsPointIn(CurrentPosition);
+  LabelSelection.Caption := Format('X: %d - %s',[CurrentPosition, MSG_INCLUDED[PointIncluded]]);
 end;
 
 end.
