@@ -185,14 +185,19 @@ end;
 
 procedure TAvlTree<TKey, TItemData>.DeleteItem(
   Item: TAvlTreeItem<TKey, TItemData>);
+var
+  FDestoryItemData: TDestoryMethod<TItemData>;
 begin
   if Assigned(Item) and (Item.FTree = self) then
   begin
+    FDestoryItemData := Item.FTree.FDestoryItemData;
     LinkOut(Item);
-
-    if OwnsObjects then
-      Item.Free;
   end;
+
+  if Assigned(FDestoryItemData) then
+    FDestoryItemData(Item.Data);
+  if OwnsObjects then
+    Item.Free;
 end;
 
 destructor TAvlTree<TKey, TItemData>.Destroy;
@@ -537,8 +542,10 @@ begin
   FDestoryItemData := nil;
 
   if Assigned(FTree) then
+  begin
     FTree.LinkOut(Self);
     FDestoryItemData := FTree.FDestoryItemData;
+  end;
 
   if Assigned(FDestoryItemData) then
     FDestoryItemData(Data);
