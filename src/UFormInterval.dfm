@@ -676,8 +676,6 @@ object FormInterval: TFormInterval
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 176
-    ExplicitHeight = 169
     object LabelCount: TLabel
       Left = 0
       Top = 485
@@ -707,10 +705,6 @@ object FormInterval: TFormInterval
     Height = 498
     Align = alClient
     TabOrder = 2
-    ExplicitLeft = 488
-    ExplicitTop = 248
-    ExplicitWidth = 185
-    ExplicitHeight = 41
     object PaintBoxResult: TPaintBox
       Left = 1
       Top = 1
@@ -736,7 +730,6 @@ object FormInterval: TFormInterval
       Height = 13
       Align = alBottom
       Alignment = taCenter
-      ExplicitLeft = 434
       ExplicitWidth = 3
     end
   end

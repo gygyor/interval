@@ -313,14 +313,6 @@ procedure TFormInterval.PaintBoxResultPaint(Sender: TObject);
   var
     Rect: TRect;
   begin
-    // todo 1: to remove
-    {
-    MyCanvas.Pen.Width := Height;
-    MyCanvas.Pen.Color := Color;
-    MyCanvas.MoveTo(X1, YCenter);
-    MyCanvas.LineTo(X2, YCenter);
-    }
-
     MyCanvas.Pen.Width := 1;
     MyCanvas.Pen.Color := clDkGray;
     MyCanvas.Brush.Color := Color;
