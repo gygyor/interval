@@ -738,11 +738,15 @@ object FormInterval: TFormInterval
       Height = 479
       Style = lbOwnerDrawFixed
       Align = alClient
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Consolas'
+      Font.Style = []
       ItemHeight = 13
+      ParentFont = False
       TabOrder = 0
       OnDrawItem = ListBoxResultDrawItem
-      ExplicitWidth = 402
-      ExplicitHeight = 485
     end
   end
   object PanelClient: TPanel
@@ -752,10 +756,6 @@ object FormInterval: TFormInterval
     Height = 492
     Align = alClient
     TabOrder = 2
-    ExplicitLeft = 405
-    ExplicitTop = 64
-    ExplicitWidth = 438
-    ExplicitHeight = 498
     object PaintBoxResult: TPaintBox
       Left = 1
       Top = 1
